@@ -1,0 +1,13 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.13.0
+2 info using node@v24.16.0
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\owenc\OneDrive\Documents\Stale Check Organizer\.npmrc
+5 silly config load:file:C:\Users\owenc\.npmrc
+6 silly config load:file:C:\Users\owenc\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm run preview --host 127.0.0.1
+8 verbose argv "run" "preview" "--" "--host" "127.0.0.1"
+9 verbose logfile logs-max:10 dir:C:\Users\owenc\OneDrive\Documents\Stale Check Organizer\.npm-cache\_logs\2026-06-23T23_17_40_166Z-
+10 verbose logfile C:\Users\owenc\OneDrive\Documents\Stale Check Organizer\.npm-cache\_logs\2026-06-23T23_17_40_166Z-debug-0.log
+11 silly logfile start cleaning logs, removing 1 files
+12 silly logfile done cleaning log files
