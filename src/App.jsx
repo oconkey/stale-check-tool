@@ -1,49 +1,33 @@
 import React, { useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
-
-const STORAGE_KEY = "stale-check-records";
-const DEFAULT_STATUS = "Untouched";
-
-function normalizeCell(value) {
-  return String(value ?? "").trim();
-}
-
-function makeCompositeKey(row) {
-  const fileNumber = normalizeCell(row["File #"]);
-  const checkNumber = normalizeCell(row["Type / Check #"]);
-
-  if (!fileNumber || !checkNumber) {
-    return "";
-  }
-
-  return `${fileNumber}_${checkNumber}`;
-}
-
-function loadStoredRecords() {
-  try {
-    const rawRecords = localStorage.getItem(STORAGE_KEY);
-    return rawRecords ? JSON.parse(rawRecords) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveStoredRecords(records) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-}
+import CheckDetailView from "./components/CheckDetailView.jsx";
+import Dashboard from "./components/Dashboard.jsx";
+import SummaryStat from "./components/SummaryStat.jsx";
+import { DEFAULT_STATUS, STORAGE_KEY } from "./constants.js";
+import {
+  loadStoredRecords,
+  makeCompositeKey,
+  saveStoredRecords
+} from "./utils/records.js";
 
 export default function App() {
   const [records, setRecords] = useState([]);
   const [uploadSummary, setUploadSummary] = useState(null);
   const [error, setError] = useState("");
+  const [view, setView] = useState("dashboard");
+  const [selectedCheckKey, setSelectedCheckKey] = useState(null);
 
   useEffect(() => {
-    setRecords(loadStoredRecords());
+    setRecords(loadStoredRecords(STORAGE_KEY));
   }, []);
 
   const recordMap = useMemo(() => {
     return new Map(records.map((record) => [record.compositeKey, record]));
   }, [records]);
+
+  const selectedRecord = selectedCheckKey
+    ? recordMap.get(selectedCheckKey)
+    : null;
 
   async function handleFileUpload(event) {
     const file = event.target.files?.[0];
@@ -88,13 +72,15 @@ export default function App() {
         nextRecords.push({
           ...row,
           compositeKey,
-          status: DEFAULT_STATUS
+          status: DEFAULT_STATUS,
+          notes: "",
+          contacts: []
         });
         seenKeys.add(compositeKey);
         addedCount += 1;
       });
 
-      saveStoredRecords(nextRecords);
+      saveStoredRecords(STORAGE_KEY, nextRecords);
       setRecords(nextRecords);
       setUploadSummary({
         fileName: file.name,
@@ -115,6 +101,39 @@ export default function App() {
     setRecords([]);
     setUploadSummary(null);
     setError("");
+    setView("dashboard");
+    setSelectedCheckKey(null);
+  }
+
+  function openCheckDetail(compositeKey) {
+    setSelectedCheckKey(compositeKey);
+    setView("detail");
+  }
+
+  function backToDashboard() {
+    setView("dashboard");
+    setSelectedCheckKey(null);
+  }
+
+  function saveCheckRecord(compositeKey, updates) {
+    const nextRecords = records.map((record) =>
+      record.compositeKey === compositeKey ? { ...record, ...updates } : record
+    );
+
+    saveStoredRecords(STORAGE_KEY, nextRecords);
+    setRecords(nextRecords);
+  }
+
+  if (view === "detail" && selectedRecord) {
+    return (
+      <main className="min-h-screen bg-slate-50 px-6 py-8 text-slate-900">
+        <CheckDetailView
+          record={selectedRecord}
+          onBack={backToDashboard}
+          onSave={saveCheckRecord}
+        />
+      </main>
+    );
   }
 
   return (
@@ -201,60 +220,8 @@ export default function App() {
           </section>
         ) : null}
 
-        <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-            <h2 className="font-semibold text-slate-950">Current records</h2>
-          </div>
-
-          {records.length ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200 text-sm">
-                <thead className="bg-slate-100 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  <tr>
-                    <th className="px-4 py-3">Composite Key</th>
-                    <th className="px-4 py-3">File #</th>
-                    <th className="px-4 py-3">Type / Check #</th>
-                    <th className="px-4 py-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {records.slice(0, 25).map((record) => (
-                    <tr key={record.compositeKey}>
-                      <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-950">
-                        {record.compositeKey}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        {record["File #"]}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        {record["Type / Check #"]}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                          {record.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="px-5 py-10 text-center text-sm text-slate-500">
-              No records have been uploaded yet.
-            </div>
-          )}
-        </section>
+        <Dashboard records={records} onSelectCheck={openCheckDetail} />
       </div>
     </main>
-  );
-}
-
-function SummaryStat({ label, value }) {
-  return (
-    <div className="rounded-lg bg-white p-4 shadow-sm">
-      <p className="text-2xl font-semibold text-slate-950">{value}</p>
-      <p className="mt-1 text-sm text-slate-600">{label}</p>
-    </div>
   );
 }

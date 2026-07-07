@@ -1,0 +1,12 @@
+Stale Check Organizer Notes
+In order to re-pack the .exe file for any changes made to the stale check organizer tool on cursor, use the following
+
+Rebuild after future changes
+
+
+cd "C:\Users\owenc\OneDrive\Documents\Stale Check Organizer"
+npm.cmd run pack
+
+
+The new .exe will appear in the release\ folder again.
+
