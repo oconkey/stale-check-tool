@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { STATUS_TABS } from "../constants.js";
+import StopPayExportModal from "./StopPayExportModal.jsx";
 import {
+  formatRecordFieldValue,
   getRecordContacts,
   getRecordDisplayFields,
   normalizeContacts,
@@ -19,12 +21,14 @@ function buildDraft(record) {
 export default function CheckDetailView({ record, onBack, onSave }) {
   const [draft, setDraft] = useState(() => buildDraft(record));
   const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [showStopPayExport, setShowStopPayExport] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
 
   useEffect(() => {
     setDraft(buildDraft(record));
     setSaveMessage("");
     setShowSavePrompt(false);
+    setShowStopPayExport(false);
   }, [record]);
 
   const displayFields = getRecordDisplayFields(record);
@@ -144,6 +148,31 @@ export default function CheckDetailView({ record, onBack, onSave }) {
         </div>
       ) : null}
 
+      {displayFields.length ? (
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <header className="border-b border-slate-200 px-6 py-4">
+            <h2 className="text-base font-semibold text-slate-950">
+              Spreadsheet fields
+            </h2>
+          </header>
+          <div className="grid gap-4 p-6 sm:grid-cols-2">
+            {displayFields.map(([key, value]) => (
+              <div
+                key={key}
+                className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3"
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  {key}
+                </p>
+                <p className="mt-1 text-sm font-medium text-slate-900">
+                  {formatRecordFieldValue(key, value)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <header className="border-b border-slate-200 px-6 py-5">
           <p className="text-sm font-medium uppercase tracking-wide text-teal-700">
@@ -230,32 +259,31 @@ export default function CheckDetailView({ record, onBack, onSave }) {
               ))}
             </select>
           </section>
+
+          <section className="rounded-xl border border-slate-200 bg-slate-50/60 p-5">
+            <h2 className="text-base font-semibold text-slate-950">
+              Stop Pay Request
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Generate a filled stop pay request form from this check&apos;s
+              details.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowStopPayExport(true)}
+              className="mt-4 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+            >
+              Export Stop Pay Request
+            </button>
+          </section>
         </div>
       </section>
 
-      {displayFields.length ? (
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <header className="border-b border-slate-200 px-6 py-4">
-            <h2 className="text-base font-semibold text-slate-950">
-              Spreadsheet fields
-            </h2>
-          </header>
-          <div className="grid gap-4 p-6 sm:grid-cols-2">
-            {displayFields.map(([key, value]) => (
-              <div
-                key={key}
-                className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3"
-              >
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  {key}
-                </p>
-                <p className="mt-1 text-sm font-medium text-slate-900">
-                  {String(value ?? "")}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
+      {showStopPayExport ? (
+        <StopPayExportModal
+          record={record}
+          onClose={() => setShowStopPayExport(false)}
+        />
       ) : null}
 
       {showSavePrompt ? (

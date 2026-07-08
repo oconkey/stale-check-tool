@@ -1,5 +1,6 @@
 export const STORAGE_KEY = "stale-check-records";
 export const DEFAULT_STATUS = "Untouched";
+export const ISSUE_DATE_COLUMN = "Date";
 
 export const STATUS_TABS = [
   "Untouched",

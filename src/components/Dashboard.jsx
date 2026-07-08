@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { STATUS_TABS } from "../constants.js";
+import { getDaysSinceIssueForRecord } from "../utils/dates.js";
 import { normalizeStatus } from "../utils/records.js";
 
 export default function Dashboard({ records, onSelectCheck }) {
@@ -19,9 +20,26 @@ export default function Dashboard({ records, onSelectCheck }) {
   }, [records]);
 
   const filteredRecords = useMemo(() => {
-    return records.filter(
-      (record) => normalizeStatus(record.status) === activeTab
-    );
+    return records
+      .filter((record) => normalizeStatus(record.status) === activeTab)
+      .sort((left, right) => {
+        const leftDays = getDaysSinceIssueForRecord(left);
+        const rightDays = getDaysSinceIssueForRecord(right);
+
+        if (leftDays === null && rightDays === null) {
+          return 0;
+        }
+
+        if (leftDays === null) {
+          return 1;
+        }
+
+        if (rightDays === null) {
+          return -1;
+        }
+
+        return rightDays - leftDays;
+      });
   }, [records, activeTab]);
 
   return (
@@ -74,35 +92,46 @@ export default function Dashboard({ records, onSelectCheck }) {
           <div role="table" className="min-w-full text-sm">
             <div
               role="row"
-              className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)] gap-4 px-4 pb-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+              className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,0.8fr)] gap-4 px-4 pb-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
             >
               <span role="columnheader">File #</span>
               <span role="columnheader">Type / Check #</span>
               <span role="columnheader">Composite Key</span>
+              <span role="columnheader">Days Since Issue</span>
             </div>
 
             <div role="rowgroup" className="flex flex-col gap-2">
-              {filteredRecords.map((record) => (
-                <div
-                  key={record.compositeKey}
-                  role="row"
-                  onClick={() => onSelectCheck(record.compositeKey)}
-                  className="grid cursor-pointer grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)] gap-4 rounded-lg border border-transparent bg-white px-4 py-3 shadow-sm transition-all duration-200 ease-out hover:scale-[1.01] hover:border-teal-200 hover:bg-teal-50/40 hover:shadow-md"
-                >
-                  <span
-                    role="cell"
-                    className="font-medium text-slate-950"
+              {filteredRecords.map((record) => {
+                const daysSinceIssue = getDaysSinceIssueForRecord(record);
+
+                return (
+                  <div
+                    key={record.compositeKey}
+                    role="row"
+                    onClick={() => onSelectCheck(record.compositeKey)}
+                    className="grid cursor-pointer grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,0.8fr)] gap-4 rounded-lg border border-transparent bg-white px-4 py-3 shadow-sm transition-all duration-200 ease-out hover:scale-[1.01] hover:border-teal-200 hover:bg-teal-50/40 hover:shadow-md"
                   >
-                    {record["File #"]}
-                  </span>
-                  <span role="cell" className="text-slate-700">
-                    {record["Type / Check #"]}
-                  </span>
-                  <span role="cell" className="text-slate-500">
-                    {record.compositeKey}
-                  </span>
-                </div>
-              ))}
+                    <span
+                      role="cell"
+                      className="font-medium text-slate-950"
+                    >
+                      {record["File #"]}
+                    </span>
+                    <span role="cell" className="text-slate-700">
+                      {record["Type / Check #"]}
+                    </span>
+                    <span role="cell" className="text-slate-500">
+                      {record.compositeKey}
+                    </span>
+                    <span
+                      role="cell"
+                      className="font-medium text-slate-900"
+                    >
+                      {daysSinceIssue === null ? "—" : daysSinceIssue}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

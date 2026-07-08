@@ -1,4 +1,5 @@
 import { DEFAULT_STATUS } from "../constants.js";
+import { formatSpreadsheetDate, isDateFieldKey } from "./dates.js";
 
 export function normalizeCell(value) {
   return String(value ?? "").trim();
@@ -63,4 +64,12 @@ export function recordsHaveSameContacts(left, right) {
 
 export function normalizeStatus(status) {
   return normalizeCell(status) || DEFAULT_STATUS;
+}
+
+export function formatRecordFieldValue(key, value) {
+  if (isDateFieldKey(key)) {
+    return formatSpreadsheetDate(value);
+  }
+
+  return String(value ?? "");
 }
