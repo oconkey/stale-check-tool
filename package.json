@@ -8,6 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "postinstall": "node scripts/ensure-electron.cjs",
+    "start": "npm run build && electron .",
     "pack": "npm run build && electron-builder --win dir"
   },
   "dependencies": {

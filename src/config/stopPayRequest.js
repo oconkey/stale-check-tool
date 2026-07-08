@@ -1,5 +1,7 @@
 export const STOP_PAY_TEMPLATE_PATH = "templates/stop_pay_template.pdf";
 
+export const STOP_PAY_OUTLOOK_SUBJECT = "Multiple Complete Closing Documents";
+
 export const STOP_PAY_HARDCODED_FIELDS = {
   bank_name: "PlainsCapital Bank",
   account_no: "7720978803",

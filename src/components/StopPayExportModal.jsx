@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { stopPayTemplateUrl } from "../assets/stopPayTemplate.js";
-import { fillStopPayRequestPdf } from "../utils/stopPayRequest.js";
+import { acceptStopPayRequest } from "../utils/outlookBridge.js";
+import {
+  buildStopPayRequestFilename,
+  fillStopPayRequestPdf
+} from "../utils/stopPayRequest.js";
 
 function revokePreviewUrl(url) {
   if (url) {
@@ -12,7 +16,9 @@ export default function StopPayExportModal({ record, onClose }) {
   const [step, setStep] = useState("reason");
   const [reasonStop, setReasonStop] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
+  const [pdfBytes, setPdfBytes] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isAccepting, setIsAccepting] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -41,16 +47,17 @@ export default function StopPayExportModal({ record, onClose }) {
     setIsGenerating(true);
 
     try {
-      const pdfBytes = await fillStopPayRequestPdf(record, {
+      const nextPdfBytes = await fillStopPayRequestPdf(record, {
         templateUrl: stopPayTemplateUrl,
         reasonStop: trimmedReason
       });
 
       revokePreviewUrl(previewUrl);
       const nextPreviewUrl = URL.createObjectURL(
-        new Blob([pdfBytes], { type: "application/pdf" })
+        new Blob([nextPdfBytes], { type: "application/pdf" })
       );
 
+      setPdfBytes(nextPdfBytes);
       setPreviewUrl(nextPreviewUrl);
       setStep("preview");
     } catch (generationError) {
@@ -60,6 +67,32 @@ export default function StopPayExportModal({ record, onClose }) {
       );
     } finally {
       setIsGenerating(false);
+    }
+  }
+
+  async function handleAccept() {
+    if (!pdfBytes) {
+      setError("The stop pay request preview is no longer available.");
+      return;
+    }
+
+    setError("");
+    setIsAccepting(true);
+
+    try {
+      await acceptStopPayRequest({
+        pdfBytes,
+        filename: buildStopPayRequestFilename(record)
+      });
+
+      handleClose();
+    } catch (acceptError) {
+      setError(
+        acceptError.message ||
+          "Unable to save the stop pay request and open Outlook."
+      );
+    } finally {
+      setIsAccepting(false);
     }
   }
 
@@ -140,7 +173,8 @@ export default function StopPayExportModal({ record, onClose }) {
                 Stop Pay Request Preview
               </h2>
               <p className="mt-2 text-sm text-slate-600">
-                Review the filled form before continuing.
+                Review the filled form before continuing. Accepting will save the
+                PDF and open a new Outlook draft with it attached.
               </p>
             </div>
 
@@ -152,21 +186,28 @@ export default function StopPayExportModal({ record, onClose }) {
                   className="h-full w-full"
                 />
               </div>
+
+              {error ? (
+                <p className="mt-3 text-sm text-rose-700">{error}</p>
+              ) : null}
             </div>
 
             <div className="flex flex-wrap items-center justify-end gap-3 border-t border-slate-200 px-6 py-4">
               <button
                 type="button"
                 onClick={handleDecline}
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700"
+                disabled={isAccepting}
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Decline
               </button>
               <button
                 type="button"
-                className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800"
+                onClick={handleAccept}
+                disabled={isAccepting}
+                className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-300"
               >
-                Accept
+                {isAccepting ? "Opening Outlook..." : "Accept"}
               </button>
             </div>
           </>
