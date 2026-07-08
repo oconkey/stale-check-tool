@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { STATUS_TABS } from "../constants.js";
+import { STATUS_TABS } from "../config/app.js";
 import StopPayExportModal from "./StopPayExportModal.jsx";
 import {
   formatRecordFieldValue,
@@ -8,7 +8,7 @@ import {
   normalizeContacts,
   normalizeStatus,
   recordsHaveSameContacts
-} from "../utils/records.js";
+} from "../services/records.js";
 
 function buildDraft(record) {
   return {

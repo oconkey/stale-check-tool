@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const fs = require("fs");
 const path = require("path");
-const { openOutlookDraft } = require("./outlook.cjs");
+const { openOutlookDraft } = require("./integrations/outlook/outlook.cjs");
 
 const STOP_PAY_OUTLOOK_SUBJECT = "Multiple Complete Closing Documents";
 const STOP_PAY_SAVE_DIR_NAME = path.join(

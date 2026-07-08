@@ -1,4 +1,4 @@
-export const STOP_PAY_TEMPLATE_PATH = "templates/stop_pay_template.pdf";
+export const STOP_PAY_TEMPLATE_PATH = "assets/templates/stop_pay_template.pdf";
 
 export const STOP_PAY_OUTLOOK_SUBJECT = "Multiple Complete Closing Documents";
 

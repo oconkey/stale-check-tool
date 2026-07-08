@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
-import { STATUS_TABS } from "../constants.js";
-import { getDaysSinceIssueForRecord } from "../utils/dates.js";
-import { normalizeStatus } from "../utils/records.js";
+import { STATUS_TABS } from "../config/app.js";
+import { getDaysSinceIssueForRecord } from "../services/dates.js";
+import { normalizeStatus } from "../services/records.js";
 
 export default function Dashboard({ records, onSelectCheck }) {
   const [activeTab, setActiveTab] = useState(STATUS_TABS[0]);

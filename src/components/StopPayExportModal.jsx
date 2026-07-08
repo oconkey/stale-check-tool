@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { stopPayTemplateUrl } from "../assets/stopPayTemplate.js";
-import { acceptStopPayRequest } from "../utils/outlookBridge.js";
+import stopPayTemplateUrl from "../../assets/templates/stop_pay_template.pdf?url";
+import { acceptStopPayRequest } from "../services/outlookBridge.js";
 import {
   buildStopPayRequestFilename,
   fillStopPayRequestPdf
-} from "../utils/stopPayRequest.js";
+} from "../services/stopPayRequest.js";
 
 function revokePreviewUrl(url) {
   if (url) {

@@ -3,12 +3,12 @@ import * as XLSX from "xlsx";
 import CheckDetailView from "./components/CheckDetailView.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import SummaryStat from "./components/SummaryStat.jsx";
-import { DEFAULT_STATUS, STORAGE_KEY } from "./constants.js";
+import { DEFAULT_STATUS, STORAGE_KEY } from "./config/app.js";
 import {
   loadStoredRecords,
   makeCompositeKey,
   saveStoredRecords
-} from "./utils/records.js";
+} from "./services/records.js";
 
 export default function App() {
   const [records, setRecords] = useState([]);
