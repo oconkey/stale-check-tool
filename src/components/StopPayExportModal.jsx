@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import stopPayTemplateUrl from "../../assets/templates/stop_pay_template.pdf?url";
-import { acceptStopPayRequest } from "../services/outlookBridge.js";
+import {
+  acceptStopPayRequest,
+  isElectronEnvironment
+} from "../services/outlookBridge.js";
 import {
   buildStopPayRequestFilename,
   fillStopPayRequestPdf
@@ -89,7 +92,7 @@ export default function StopPayExportModal({ record, onClose }) {
     } catch (acceptError) {
       setError(
         acceptError.message ||
-          "Unable to save the stop pay request and open Outlook."
+          "Unable to export the stop pay request and open Outlook."
       );
     } finally {
       setIsAccepting(false);
@@ -173,8 +176,9 @@ export default function StopPayExportModal({ record, onClose }) {
                 Stop Pay Request Preview
               </h2>
               <p className="mt-2 text-sm text-slate-600">
-                Review the filled form before continuing. Accepting will save the
-                PDF and open a new Outlook draft with it attached.
+                {isElectronEnvironment()
+                  ? "Review the filled form before continuing. Accepting will save the PDF and open a new Outlook draft with it attached."
+                  : "Review the filled form before continuing. Accepting will download the PDF and open an Outlook compose window. Attach the downloaded file before sending."}
               </p>
             </div>
 
@@ -207,7 +211,11 @@ export default function StopPayExportModal({ record, onClose }) {
                 disabled={isAccepting}
                 className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-300"
               >
-                {isAccepting ? "Opening Outlook..." : "Accept"}
+                {isAccepting
+                  ? "Opening Outlook..."
+                  : isElectronEnvironment()
+                    ? "Accept"
+                    : "Download & Open Outlook"}
               </button>
             </div>
           </>

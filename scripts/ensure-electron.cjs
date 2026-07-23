@@ -1,7 +1,18 @@
-const { downloadArtifact } = require("@electron/get");
-const { spawnSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
+
+// Skip on Vercel / CI web deploys — Electron is only needed for the desktop app.
+if (
+  process.env.VERCEL ||
+  process.env.ELECTRON_SKIP_BINARY_DOWNLOAD === "1" ||
+  process.env.SKIP_ELECTRON_DOWNLOAD === "1"
+) {
+  console.log("Skipping Electron binary download (web/CI install).");
+  process.exit(0);
+}
+
+const { downloadArtifact } = require("@electron/get");
+const { spawnSync } = require("child_process");
 
 const electronDir = path.join(__dirname, "..", "node_modules", "electron");
 const distDir = path.join(electronDir, "dist");
